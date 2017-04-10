@@ -8,27 +8,20 @@
 #
 
 library(shiny)
-library(plotly)
-dataframe <- read.csv("trainWalmart.csv")
-##tt<-subset(dataframe, format(as.Date(Date),"%Y")==2010)
-agg <-aggregate(Weekly_Sales ~ Date, dataframe, sum)
 
-# Define server logic required to draw a histogram
+mtcars$am <- as.factor(mtcars$am)
+levels(mtcars$am) <- c("Automatic", "Manual")
+model <- lm(mpg ~ cyl + hp + wt + am, data = mtcars)
+predictMPG <- function (cyl, horse, weight, trans)
+{
+    uidata <- data.frame(cyl=cyl, hp=horse, wt=weight, am=trans)
+    predict(model, uidata)
+}
+
 shinyServer(function(input, output) {
    
-  output$newHist <- renderPlotly({
-      set.seed(1122)
-      minX <- input$range[1]
-      maxX <- input$range[2]
-    #  dataX <- runif(dataframe$Weekly_Sales, minX, maxX)
-    #  dataY<- runif(dataframe$Dates, minX, maxX)  
+    output$pred <- renderText(predictMPG(input$cyl, input$horse, input$weight/1000, input$trans))
+      
 
-      dffilter <- agg[agg$Weekly_Sales>minX & agg$Weekly_Sales<maxX, ]
-      
-      # draw the histogram with the specified number of bins
-        plot_ly(x=~dffilter$Date, y=~dffilter$Weekly_Sales, type = "bar")
-      
-    
-  })
   
 })
